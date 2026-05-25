@@ -190,21 +190,26 @@ if [ ! -d objects ]; then
     ok "repo initialised"
 fi
 
-info "Pulling new objects from build repo..."
-# pull-local copies refs+objects without touching anything for other refs that
-# may already live in the gh-pages repo (other apps' branches, prior versions).
-if ! ostree --repo=. pull-local --gpg-verify=false "$BUILD_REPO" >/dev/null; then
-    die "ostree pull-local failed"
-fi
-ok "objects pulled"
+info "Importing build into channel repo..."
+# Use build-commit-from rather than `ostree pull-local`: pull-local rejects a
+# signed source with "Must specify remote name to enable gpg verification" when
+# the destination has no matching remote (which is always, for local-to-local).
+# build-commit-from copies the ref's content into a fresh commit on the dest
+# and signs it with our key in one step — exactly what we want.
+mapfile -t BUILD_REFS < <(ostree --repo="$BUILD_REPO" refs)
+[ "${#BUILD_REFS[@]}" -gt 0 ] || die "build repo has no refs"
 
-# Re-sign the ref in the gh-pages repo with our key — pull-local copies the
-# signature only when both sides trust the same key, which isn't guaranteed
-# when --prebuilt-repo points at someone else's build dir.
-APP_REF="app/${APP_ID}/$(uname -m | sed 's/x86_64/x86_64/;s/aarch64/aarch64/')/${BRANCH}"
-if ostree --repo=. refs | grep -qx "$APP_REF"; then
-    flatpak build-sign --gpg-sign="$GPG_KEY_LONG" . "$APP_REF" 2>/dev/null || true
-fi
+for ref in "${BUILD_REFS[@]}"; do
+    if ! flatpak build-commit-from \
+        --src-repo="$BUILD_REPO" \
+        --src-ref="$ref" \
+        --gpg-sign="$GPG_KEY_LONG" \
+        --no-update-summary \
+        . "$ref" >/dev/null; then
+        die "build-commit-from failed for ref: $ref"
+    fi
+done
+ok "imported ${#BUILD_REFS[@]} ref(s)"
 
 # ----- regenerate channel metadata -----------------------------------------
 
