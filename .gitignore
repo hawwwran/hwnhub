@@ -1,0 +1,6 @@
+# Build artefacts — anything publish.sh creates while staging a release.
+# The served Flatpak repo lives on the gh-pages branch, so nothing here.
+work/
+*.tmp
+*.swp
+.DS_Store

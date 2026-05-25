@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>hwnhub — a Flatpak channel</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      max-width: 42rem;
+      margin: 3rem auto;
+      padding: 0 1.25rem;
+      line-height: 1.5;
+    }
+    h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
+    h1 + p { color: color-mix(in srgb, currentColor 65%, transparent); margin-top: 0; }
+    h2 { margin-top: 2.5rem; font-size: 1.15rem; }
+    .app {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+    }
+    .app:last-child { border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
+    .app-name { font-weight: 600; }
+    .app-version {
+      font-variant-numeric: tabular-nums;
+      color: color-mix(in srgb, currentColor 60%, transparent);
+      font-size: 0.9em;
+    }
+    .app-ref { margin-left: auto; font-size: 0.9em; }
+    code, pre {
+      font-family: ui-monospace, "JetBrains Mono", "SF Mono", Consolas, monospace;
+      font-size: 0.9em;
+    }
+    pre {
+      background: color-mix(in srgb, currentColor 8%, transparent);
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+    a { color: inherit; }
+    .empty { color: color-mix(in srgb, currentColor 60%, transparent); font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>hwnhub</h1>
+  <p>A self-hosted Flatpak channel for hawwwran's apps.</p>
+
+  <h2>Apps in this channel</h2>
+  <div id="apps">
+@APP_LIST@
+  </div>
+
+  <h2>Adding the channel by hand</h2>
+  <p>Clicking any <code>.flatpakref</code> above does this for you. If you'd rather use the CLI:</p>
+  <pre><code>flatpak remote-add --if-not-exists hwnhub \
+  https://hawwwran.github.io/hwnhub/hwnhub.flatpakrepo</code></pre>
+
+  <h2>What is this?</h2>
+  <p>
+    Same mechanics as Flathub, smaller scale. Once you've installed one app from
+    here, GNOME Software shows updates for it and any other app in this channel
+    on its normal refresh cadence. The repo is GPG-signed; the public key is
+    bundled into every <code>.flatpakref</code>, so trust is established at
+    install time.
+  </p>
+
+  <p style="margin-top: 3rem; font-size: 0.85em; color: color-mix(in srgb, currentColor 50%, transparent);">
+    Tooling lives at <a href="https://github.com/hawwwran/hwnhub">github.com/hawwwran/hwnhub</a>.
+  </p>
+</body>
+</html>
