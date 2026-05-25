@@ -190,6 +190,13 @@ if [ ! -d objects ]; then
     ok "repo initialised"
 fi
 
+# Git doesn't track empty directories, so refs/remotes/ and refs/mirrors/
+# disappear from gh-pages between publishes. `build-update-repo
+# --generate-static-deltas` then fails with "opendir(refs/remotes): No such
+# file or directory" when it tries to enumerate every ref kind. Recreate them
+# unconditionally — cheap, idempotent, fixes the failure for good.
+mkdir -p refs/heads refs/remotes refs/mirrors
+
 info "Importing build into channel repo..."
 # Use build-commit-from rather than `ostree pull-local`: pull-local rejects a
 # signed source with "Must specify remote name to enable gpg verification" when
