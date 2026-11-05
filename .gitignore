@@ -4,3 +4,6 @@ work/
 *.tmp
 *.swp
 .DS_Store
+
+# Local working notes and handoffs, never committed.
+temp/
