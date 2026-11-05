@@ -1,3 +1,5 @@
+<img src="assets/hwnhub-icon-256x256.png" alt="hwnhub icon: a raven in front of a wall of boxes" width="128" align="right">
+
 # hwnhub
 
 A self-hosted Flatpak channel for `hawwwran`'s apps. Think of it as a tiny private
@@ -15,7 +17,7 @@ This repo carries the **tooling** on `main` and the **served Flatpak repo** on
 
 | Branch     | Contents                                                            | Who reads it          |
 |------------|---------------------------------------------------------------------|-----------------------|
-| `main`     | `publish.sh`, templates, this README                                | Release scripts       |
+| `main`     | `publish.sh`, templates, channel icon (`assets/`), this README      | Release scripts       |
 | `gh-pages` | OSTree repo, per-app `.flatpakref`, `index.html`, public GPG key    | End users via Pages   |
 
 ## Installing an app from this channel

@@ -25,6 +25,7 @@
 set -u
 
 HWNHUB_REMOTE_URL="https://hawwwran.github.io/hwnhub/"
+HWNHUB_ICON_URL="${HWNHUB_REMOTE_URL}icons/hwnhub-icon-128x128.png"
 HWNHUB_REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 RED='\033[0;31m'
@@ -84,6 +85,8 @@ fi
 [ -d "$SOURCE_DIR" ] || die "source dir not found: $SOURCE_DIR"
 [ -f "$HWNHUB_REPO_DIR/templates/index.html.tmpl" ] \
     || die "must be run from a hwnhub clone (templates/ missing)"
+[ -f "$HWNHUB_REPO_DIR/assets/hwnhub-icon-128x128.png" ] \
+    || die "channel icon missing: assets/hwnhub-icon-128x128.png"
 
 # ----- tooling preflight -----------------------------------------------------
 
@@ -273,6 +276,12 @@ sed \
     "$HWNHUB_REPO_DIR/templates/app.flatpakref.tmpl" \
     > "${APP_ID}.flatpakref"
 
+# Channel icon: the landing page favicon and logo, Icon= in the .flatpakrepo
+# and xa.icon in the signed summary all point into icons/.
+mkdir -p icons
+cp "$HWNHUB_REPO_DIR"/assets/hwnhub-icon-*.png icons/ \
+    || die "failed to copy channel icons into gh-pages"
+
 # Channel-wide .flatpakrepo — lets users add the remote without installing
 # any specific app. Stays the same across releases; regenerate only if missing
 # or if the pubkey rotated.
@@ -282,6 +291,7 @@ Title=hwnhub
 Url=${HWNHUB_REMOTE_URL}
 Homepage=https://github.com/hawwwran/hwnhub
 Comment=Self-hosted Flatpak channel for hawwwran's apps
+Icon=${HWNHUB_ICON_URL}
 GPGKey=${GPG_KEY_B64}
 EOF
 
@@ -318,6 +328,7 @@ ok "index.html regenerated"
 info "Regenerating AppStream summary and static deltas..."
 if ! flatpak build-update-repo \
     --gpg-sign="$GPG_KEY_LONG" \
+    --icon="$HWNHUB_ICON_URL" \
     --generate-static-deltas \
     --prune-depth=3 \
     .; then

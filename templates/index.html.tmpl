@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>hwnhub — a Flatpak channel</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/hwnhub-icon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/hwnhub-icon-192x192.png">
+  <link rel="apple-touch-icon" href="icons/hwnhub-icon-192x192.png">
   <style>
     :root { color-scheme: light dark; }
     body {
@@ -13,7 +16,14 @@
       padding: 0 1.25rem;
       line-height: 1.5;
     }
-    h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
+    h1 {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.75rem;
+      margin-bottom: 0.25rem;
+    }
+    h1 img { width: 3.5rem; height: 3.5rem; }
     h1 + p { color: color-mix(in srgb, currentColor 65%, transparent); margin-top: 0; }
     h2 { margin-top: 2.5rem; font-size: 1.15rem; }
     .app {
@@ -46,7 +56,7 @@
   </style>
 </head>
 <body>
-  <h1>hwnhub</h1>
+  <h1><img src="icons/hwnhub-icon-128x128.png" alt="">hwnhub</h1>
   <p>A self-hosted Flatpak channel for hawwwran's apps.</p>
 
   <h2>Apps in this channel</h2>
