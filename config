@@ -2,3 +2,9 @@
 repo_version=1
 mode=archive-z2
 indexed-deltas=true
+
+[flatpak]
+title=hwnhub
+comment=Self-hosted Flatpak channel for hawwwran's apps
+homepage=https://github.com/hawwwran/hwnhub
+icon=https://hawwwran.github.io/hwnhub/icons/hwnhub-icon-128x128.png
