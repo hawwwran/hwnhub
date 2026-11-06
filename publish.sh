@@ -26,6 +26,9 @@ set -u
 
 HWNHUB_REMOTE_URL="https://hawwwran.github.io/hwnhub/"
 HWNHUB_ICON_URL="${HWNHUB_REMOTE_URL}icons/hwnhub-icon-128x128.png"
+HWNHUB_TITLE="hwnhub"
+HWNHUB_COMMENT="Self-hosted Flatpak channel for hawwwran's apps"
+HWNHUB_HOMEPAGE="https://github.com/hawwwran/hwnhub"
 HWNHUB_REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 RED='\033[0;31m'
@@ -283,14 +286,14 @@ cp "$HWNHUB_REPO_DIR"/assets/hwnhub-icon-*.png icons/ \
     || die "failed to copy channel icons into gh-pages"
 
 # Channel-wide .flatpakrepo — lets users add the remote without installing
-# any specific app. Stays the same across releases; regenerate only if missing
-# or if the pubkey rotated.
+# any specific app. Rewritten on every publish, so a rotated key or changed
+# channel metadata is picked up automatically.
 cat > hwnhub.flatpakrepo <<EOF
 [Flatpak Repo]
-Title=hwnhub
+Title=${HWNHUB_TITLE}
 Url=${HWNHUB_REMOTE_URL}
-Homepage=https://github.com/hawwwran/hwnhub
-Comment=Self-hosted Flatpak channel for hawwwran's apps
+Homepage=${HWNHUB_HOMEPAGE}
+Comment=${HWNHUB_COMMENT}
 Icon=${HWNHUB_ICON_URL}
 GPGKey=${GPG_KEY_B64}
 EOF
@@ -326,8 +329,15 @@ ok "index.html regenerated"
 # ----- final summary + signing ---------------------------------------------
 
 info "Regenerating AppStream summary and static deltas..."
+# The title/comment/homepage/icon go into the signed summary as xa.* keys, and
+# clients copy them into their local remote config on every metadata refresh.
+# Without them a remote keeps whatever title it was created with: the bundle
+# file name for a .flatpak install, the app name for a .flatpakref install.
 if ! flatpak build-update-repo \
     --gpg-sign="$GPG_KEY_LONG" \
+    --title="$HWNHUB_TITLE" \
+    --comment="$HWNHUB_COMMENT" \
+    --homepage="$HWNHUB_HOMEPAGE" \
     --icon="$HWNHUB_ICON_URL" \
     --generate-static-deltas \
     --prune-depth=3 \
