@@ -1,0 +1,3 @@
+# Branches kept apart from the default branch on purpose, one per line.
+# Project Manager does not count them as unmerged loose ends.
+gh-pages
