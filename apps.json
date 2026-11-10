@@ -1,5 +1,13 @@
 [
   {
+    "app_id": "com.hawwwran.EasyPlayer",
+    "name": "Easy Player",
+    "version": "0.1.0",
+    "branch": "stable",
+    "updated": "2026-11-10",
+    "flatpakref": "com.hawwwran.EasyPlayer.flatpakref"
+  },
+  {
     "app_id": "io.github.hawwwran.flatpal",
     "name": "Flatpal",
     "version": "1.1.0",
