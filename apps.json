@@ -14,5 +14,13 @@
     "branch": "stable",
     "updated": "2026-11-06",
     "flatpakref": "io.github.hawwwran.flatpal.flatpakref"
+  },
+  {
+    "app_id": "com.hawwwran.notteams",
+    "name": "NotTeams",
+    "version": "0.1.0",
+    "branch": "stable",
+    "updated": "2026-11-27",
+    "flatpakref": "com.hawwwran.notteams.flatpakref"
   }
 ]
