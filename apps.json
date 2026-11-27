@@ -10,9 +10,9 @@
   {
     "app_id": "io.github.hawwwran.flatpal",
     "name": "Flatpal",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "branch": "stable",
-    "updated": "2026-11-06",
+    "updated": "2026-11-27",
     "flatpakref": "io.github.hawwwran.flatpal.flatpakref"
   },
   {
