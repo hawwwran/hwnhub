@@ -272,12 +272,98 @@ ok "apps.json updated"
 # Per-app .flatpakref — clicking this in a browser installs the app + adds
 # the hwnhub remote on first install. GPGKey is inline base64 so the user
 # doesn't have to trust the URL alone.
-sed \
-    -e "s|@APP_ID@|${APP_ID}|g" \
-    -e "s|@APP_NAME@|${APP_NAME}|g" \
-    -e "s|@GPG_KEY_BASE64@|${GPG_KEY_B64}|g" \
-    "$HWNHUB_REPO_DIR/templates/app.flatpakref.tmpl" \
-    > "${APP_ID}.flatpakref"
+#
+# It also carries the app's summary, description, homepage and icon, taken
+# from the AppStream data flatpak-builder composed into the build. GNOME
+# Software shows a .flatpakref's app from the user's local copy of the channel
+# catalog, which Flatpak refreshes about once a day; until then an app that is
+# new to the channel would get a bare page without these keys.
+APP_REF=""
+for ref in "${BUILD_REFS[@]}"; do
+    case "$ref" in app/"$APP_ID"/*) APP_REF="$ref"; break ;; esac
+done
+APP_ICON_URL=""
+APPSTREAM_GZ="$WORK/appstream.xml.gz"
+: > "$APPSTREAM_GZ"
+if [ -n "$APP_REF" ]; then
+    ostree --repo="$BUILD_REPO" cat "$APP_REF" "/files/share/app-info/xmls/${APP_ID}.xml.gz" \
+        > "$APPSTREAM_GZ" 2>/dev/null || : > "$APPSTREAM_GZ"
+    mkdir -p icons
+    if ostree --repo="$BUILD_REPO" cat "$APP_REF" "/files/share/app-info/icons/flatpak/128x128/${APP_ID}.png" \
+        > "icons/${APP_ID}.png" 2>/dev/null && [ -s "icons/${APP_ID}.png" ]; then
+        APP_ICON_URL="${HWNHUB_REMOTE_URL}icons/${APP_ID}.png"
+    else
+        rm -f "icons/${APP_ID}.png"
+    fi
+fi
+[ -s "$APPSTREAM_GZ" ] || warn "no AppStream data in the build: ${APP_ID}.flatpakref gets no description"
+
+python3 - "$HWNHUB_REPO_DIR/templates/app.flatpakref.tmpl" "$APP_ID" "$APP_NAME" \
+    "$GPG_KEY_B64" "$APP_ICON_URL" "$APPSTREAM_GZ" <<'PYEOF' || die "failed to write ${APP_ID}.flatpakref"
+import gzip
+import sys
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+tmpl, app_id, app_name, gpg_key, icon_url, appstream_gz = sys.argv[1:7]
+text = (Path(tmpl).read_text(encoding="utf-8")
+        .replace("@APP_ID@", app_id)
+        .replace("@APP_NAME@", app_name)
+        .replace("@GPG_KEY_BASE64@", gpg_key))
+
+LANG = "{http://www.w3.org/XML/1998/namespace}lang"
+
+
+def untranslated(parent, tag=None):
+    """Child elements (named `tag`) without an xml:lang, in document order."""
+    children = parent.findall(tag) if tag else list(parent)
+    return [e for e in children if LANG not in e.attrib]
+
+
+def flat(element):
+    return " ".join("".join(element.itertext()).split())
+
+
+def keyfile_value(value):
+    """A GKeyFile string: backslashes and line breaks escaped."""
+    return value.replace("\\", "\\\\").replace("\n", "\\n")
+
+
+extra = {}
+raw = Path(appstream_gz).read_bytes()
+try:
+    root = ET.fromstring(gzip.decompress(raw)) if raw else None
+except (ET.ParseError, OSError, EOFError) as e:
+    print(f"warning: unreadable AppStream data, no description in the .flatpakref: {e}", file=sys.stderr)
+    root = None
+if root is not None:
+    components = [root] if root.tag == "component" else root.findall("component")
+    component = next((c for c in components if c.findtext("id") == app_id), None)
+    if component is not None:
+        summary = untranslated(component, "summary")
+        if summary:
+            extra["Comment"] = flat(summary[0])
+        description = untranslated(component, "description")
+        if description:
+            lines = []
+            for block in untranslated(description[0]):
+                if block.tag == "p":
+                    lines.append(flat(block))
+                elif block.tag in ("ul", "ol"):
+                    lines.extend("• " + flat(li) for li in untranslated(block, "li"))
+            extra["Description"] = "\n".join(line for line in lines if line)
+        homepage = next((u.text.strip() for u in component.findall("url")
+                         if u.get("type") == "homepage" and u.text), None)
+        if homepage:
+            extra["Homepage"] = homepage
+if icon_url:
+    extra["Icon"] = icon_url
+
+if not text.endswith("\n"):
+    text += "\n"
+text += "".join(f"{key}={keyfile_value(value)}\n" for key, value in extra.items())
+Path(f"{app_id}.flatpakref").write_text(text, encoding="utf-8")
+PYEOF
 
 # Channel icon: the landing page favicon and logo, Icon= in the .flatpakrepo
 # and xa.icon in the signed summary all point into icons/.
